@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>map color design (gsimaps vector)</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="./mapbox/1.8.1/mapbox-gl.js"></script>
+<link href="./mapbox/1.8.1/mapbox-gl.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+<style>
+body { margin:0; padding:0; }
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+#menu {
+    position: absolute;
+    left:  0.5em;
+    top: 0.5em; 
+    padding: 0.2em 0.5em;
+    margin: 0 0;
+    background: #ffffffcc;
+    border: solid 1px #aaa;
+    border-radius: 3px;
+    font-family: "Open Sans", sans-serif;
+    height: auto;
+    min-width: 150px;
+}
+#colorselect {
+    margin: 0px 10px 10px 0px;
+    padding: 0px 0px 0px 5px;
+    background: #fff;
+    border-radius: 3px;
+    box-shadow: 3px 0px 3px 3px #fff;
+}
+button.c1 {
+    display: block;
+    text-align:center;
+    background: #ddd;
+    padding 0 0.5em 0 0.5em;
+    border: solid 1px #ccc;
+    border-radius: 3px;
+    margin: 0px 0px 5px 0px;
+    line-height: 1.5em;
+    font-size: 1em;
+    width: 100%;
+    cursor: pointer;
+}
+#download {
+    display: block;
+    text-align:center;
+    background: #ddd;
+    padding 0 0.5em 0 0.5em;
+    border: solid 1px #ccc;
+    border-radius: 3px;
+    margin: 0px 0px 5px 0px;
+    line-height: 1.5em;
+    font-size: 1em;
+    width: 100%;
+    cursor: pointer;
+}
+#colorselecttable td {
+    padding: 0px 5px 0px 5px;
+}
+h1 {
+    line-height: 1em;
+    font-size: 1em;
+    padding: 0px 0px 0px 0px;
+    background: #fff;
+    box-shadow: 3px 0px 3px 3px #fff;
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="menu">
+  <h1>デザインをつくる</h1>
+    <div id="colorselect">
+      <div>好きな色を選ぶ</div>
+      <table id="colorselecttable">
+        <tr><td><div id="color-picker-main"></div></td><td>Main</td></tr>
+        <tr><td><div id="color-picker-sub"></div></td><td>Sub</td></tr>
+        <tr><td><div id="color-picker-acc"></div></td><td>Accent</td></tr>
+      </table>
+    </div>
+    <button type="button" class="c1" name="colchange" onclick="change_style_color_normal()" >色を地図に反映</button>
+  <h1>デザインを変える</h1>
+    <button type="button" class="c1" name="randcolchange" onclick="change_style_color_rand()" >おまかせで変更</button>
+    <button type="button" class="c1" name="monochrome" onclick="change_style_color_monochrome()" >モノクロに変更</button>
+    <button type="button" class="c1" name="background" onclick="background_onoff()" >背景のON/OFF</button>
+  <h1>デザインを保存</h1>
+    <div><a id="download">ダウンロード</a></div>
+</div>
+
+<script>
+
+/*************************************************/
+/*Mapbox 設定                                    */
+/*************************************************/
+var map = new mapboxgl.Map({
+    container: "map",
+    hash: true, 
+    style: "./pale.json", // style.jsonのパス
+    center: [139.767144, 35.680621], 
+    zoom: 15,
+    maxZoom: 17.99,
+    minZoom: 4,
+    localIdeographFontFamily: false
+//  localIdeographFontFamily: ["MS Gothic", "Hiragino Kaku Gothic Pro", "sans-serif"]
+});
+
+
+map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+map.addControl(new mapboxgl.ScaleControl() );
+
+/*************************************************/
+/*Pickr 設定                                     */
+/*************************************************/
+var main_color_arr = [0, 100, 50, 1]; //hsla
+var sub_color_arr = [22.5, 100, 50, 1]; //hsla
+var accnt_color_arr = [202.5, 100, 50, 1]; //hsla
+
+var colorset4pickr = [
+        "hsla(0,100,50,1)",
+        "hsla(11.25,100,50,1)",
+        "hsla(22.5,100,50,1)",
+        "hsla(33.75,100,50,1)",
+        "hsla(45,100,50,1)",
+        "hsla(56.25,100,50,1)",
+        "hsla(67.5,100,50,1)",
+        "hsla(78.75,100,50,1)",
+        "hsla(90,100,50,1)",
+        "hsla(101.25,100,50,1)",
+        "hsla(112.5,100,50,1)",
+        "hsla(123.75,100,50,1)",
+        "hsla(135,100,50,1)",
+        "hsla(146.25,100,50,1)",
+        "hsla(157.5,100,50,1)",
+        "hsla(168.75,100,50,1)",
+        "hsla(180,100,50,1)",
+        "hsla(191.25,100,50,1)",
+        "hsla(202.5,100,50,1)",
+        "hsla(213.75,100,50,1)",
+        "hsla(225,100,50,1)",
+        "hsla(236.25,100,50,1)",
+        "hsla(247.5,100,50,1)",
+        "hsla(258.75,100,50,1)",
+        "hsla(270,100,50,1)",
+        "hsla(281.25,100,50,1)",
+        "hsla(292.5,100,50,1)",
+        "hsla(303.75,100,50,1)",
+        "hsla(315,100,50,1)",
+        "hsla(326.25,100,50,1)",
+        "hsla(337.5,100,50,1)",
+        "hsla(348.75,100,50,1)"
+    ];
+
+var pickrmain = new Pickr({
+    el: "#color-picker-main",
+    theme: "monolith",
+    default: "hsla(0,100,50,1)",
+    swatches: colorset4pickr,
+    components: {
+        palette: false,
+        hue: false,
+        interaction: {
+            hsla: true,
+            hex: true,
+            rgba: true,
+            input: true,
+            save: true
+        }
+    }
+});
+
+var pickrsub = new Pickr({
+    el: "#color-picker-sub",
+    theme: "monolith",
+    default: "hsla(22.5,100,50,1)",
+    swatches: colorset4pickr,
+    components: {
+        palette: false,
+        hue: false,
+        interaction: {
+            hsla: true,
+            hex: true,
+            rgba: true,
+            input: true,
+            save: true
+        }
+    }
+});
+
+var pickracc = new Pickr({
+    el: "#color-picker-acc",
+    theme: "monolith",
+    default: "hsla(202.5,100,50,1)",
+    swatches: colorset4pickr,
+    components: {
+        palette: false,
+        hue: false,
+        interaction: {
+            hsla: true,
+            hex: true,
+            rgba: true,
+            input: true,
+            save: true
+        }
+    }
+});
+
+pickrmain.on("save", (color) => {
+    main_color_arr = color.toHSLA();
+    pickrmain.hide();
+})
+
+pickrsub.on("save", (color) => {
+    sub_color_arr = color.toHSLA();
+    pickrsub.hide();
+})
+
+pickracc.on("save", (color) => {
+    accnt_color_arr = color.toHSLA();
+    pickracc.hide();
+})
+
+/*************************************************/
+/*文字列"rgba(r,g,b,a)"→配列への変換            */
+/*************************************************/
+var parsecolor = function(txt){
+    if( (txt.indexOf("rgba") == 0) || (txt.indexOf("hsla") == 0) ){
+        var length = txt.length - 1;
+        var type= txt.slice(0, 4);
+        txt = txt.slice(5,length);
+        var col = txt.split(",");
+    }else{
+        var length = txt.length - 1;
+        var type= txt.slice(0, 3);
+        txt = txt.slice(4,length);
+        var col = txt.split(",");
+        col.push(1);
+    }
+    var color = [];
+    color.push( type );
+    color.push( parseInt(col[0]) );
+    color.push( parseInt(col[1]) );
+    color.push( parseInt(col[2]) );
+    color.push( Number(col[3]) );
+    return color;
+}
+
+/*************************************************/
+/*RGB→HSLの変換                                 */
+/*************************************************/
+var calcsl = function(max, min) {
+    var L = (max + min)/(2*255);
+    var S = 0;
+    if( (L <= 0) || (L >= 1) ){
+        S = 0;
+    }else if(L > 0.5){
+        S = (max-min)/(255*2-max-min);
+    }else{
+        S = (max-min)/(max+min);
+    }
+    var SL = {"s" : S, "l" : L};
+    return SL;
+}
+
+var rgb2hsl = function(r, g, b, a = 1) {
+    var max=0; var middle=0; var min = 0; 
+    var h=0; var s=0; var l=0; 
+    if((r == g) && (r == b)){
+        max = r; middle=b; min = g; 
+        h = 0;
+        var sl = calcsl(max, min);
+        s = sl.s;
+        l = sl.l;
+    }else if((b <= g) && (b < r)){
+        min = b; 
+        if(g < r){
+            middle=g; max = r;
+            h = 60*((middle-min)/(max-min));
+        }else{ 
+            middle=r; max = g; 
+            h = 120 - 60*((middle-min)/(max-min));
+        }
+        var sl = calcsl(max, min);
+        s = sl.s;
+        l = sl.l;
+    }else if((r <= g) && (r < b)){
+        min = r;
+        if(b < g){
+            middle=b; max = g; 
+            h = 120 + 60*((middle-min)/(max-min));
+        }else{ 
+            middle=g; max = b; 
+            h = 240 - 60*((middle-min)/(max-min));
+        }
+        var sl = calcsl(max, min);
+        s = sl.s;
+        l = sl.l;
+    }else{
+        min = g; 
+        if(r < b){
+            middle=r; max = b; 
+            h = 240 + 60*((middle-min)/(max-min));
+        }else{ 
+            middle=b; max = r; 
+            h = 360 - 60*((middle-min)/(max-min));
+        } 
+        var sl = calcsl(max, min);
+        s = sl.s;
+        l = sl.l;
+    }
+    
+    if(h > 360){
+        h = h - 360;
+    }else if(h < 0){
+        h = h + 360;
+    }
+    
+    var hsl = [ Math.floor(h), Math.floor(s*100), Math.floor(l*100), a ];
+    return hsl;
+}
+
+
+/*************************************************/
+/*配列→文字列"hsla(h,s,l,a)"への変換            */
+/*************************************************/
+
+var create_hlsa_string = function(input1, input2, input3, input4, move = 0){
+    change1 = input1;
+    change2 = input2;
+    change3 = input3;
+    change4 = input4;
+
+    if( input1 > 360){
+        change1 = input1 - 360 * Math.floor(input1/360);
+    }else if(input1 < 0){
+        change1 = input1 - 360 * Math.ceil(input1/360);
+    }
+    
+    if(input2 > 100){
+      change2 = 100 - move;
+    }else if(input2 < 0){
+      change2 = 0 + move;
+    }
+    
+    if(input3 > 100){
+      change3 = 100 - move;
+    }else if(input3 < 0){
+      change3 = 0 + move;
+    }
+    
+    change1 = Math.floor(change1);
+    change2 = Math.floor(change2) + "%";
+    change3 = Math.floor(change3) + "%";
+    var color_txt = "hsla" + "(" + change1 + "," + change2 + "," + change3 + "," + change4 + ")";
+    return color_txt;
+}
+
+
+/*************************************************/
+/*色の変換                                       */
+/*************************************************/
+
+//メイン・サブ・アクセントカラーから変更
+var change_color = function(outputtype, input1, input2 , input3, input4, prop_name){
+    var change1 = input1;
+    var change2 = input2;
+    var change3 = input3;
+    var change4 = input4;
+    
+    if( input2 < 1){ 
+        if(input3 > 99){
+          //
+        }else if(prop_name.match(/text-/)){
+          change3 = input3 * 0.55;
+        }else if(prop_name.match(/fill/)){
+          change1 = main_color_arr[0];
+          change2 = 50;
+        }else if(input3 > 65){ 
+          change1 = main_color_arr[0];
+          change2 = input2 + 50;
+        }else{
+          //
+        }
+    }else if((input1 > 0) && (input1 < 41)){
+        change1 = main_color_arr[0];
+    }else if((input1 > 40) && (input1 < 45)){
+        change1 = main_color_arr[0];
+        change3 = 80;
+    }else if((input1 > 120) && (input1 < 180) && !(prop_name.match(/fill-/)) ){ 
+        change1 = (input1 - 145)/3 + accnt_color_arr[0];
+    }else if((input1 > 120) && (input1 < 180) && (prop_name.match(/fill-/)) ){ 
+        change1 = main_color_arr[0];
+        change3 = input3 + 15;
+    }else if((input1 > 200) && (input1 < 270) && (prop_name.match(/fill-/)) ){ 
+        change1 = sub_color_arr[0]; 
+    }else if((input1 > 200) && (input1 < 270) ){ 
+        change1 = sub_color_arr[0]; 
+    }else{
+        change1 = main_color_arr[0];
+    }
+    
+    var color_txt = create_hlsa_string(change1, change2, change3, change4, 0);
+    return(color_txt);
+}
+
+//おまかせで変更
+var randchange_color = function(outputtype, input1, input2 , input3, input4, prop_name){
+    const rotatedeg = 60;
+    const randrange = 15;
+    var change1 = input1 + ( Math.random() - 0.5) * randrange + rotatedeg;
+    var change2 = input2 + ( Math.random() - 0.5) * 10;
+    var change3 = input3 + ( Math.random() - 0.5) * 10;
+    var change4 = input4;
+    
+    if((input2 == 0) && (input3 == 100)){ 
+        change2 = input2; 
+        change3 = input3;
+    }
+    
+    var color_txt = create_hlsa_string(change1, change2, change3, change4, 25);
+    return(color_txt);
+}
+
+//モノクロ
+var change_monochrome = function(outputtype, input1, input2 , input3, input4, prop_name){
+    var change1 = input1;
+    var change2 = 0;
+    var change3 = input3;
+    var change4 = input4;
+
+    var color_txt = create_hlsa_string(change1, change2, change3, change4, 0);
+    return(color_txt);
+}
+
+/*************************************************/
+/*背景                                           */
+/*************************************************/
+//layer.id は "background"を前提とする。
+//背景の初期設定
+var create_backgorund_layer = function( h = main_color_arr[0], s = 100, l = 98){
+var background_color = "hsla(" + h + "," + s + "%," + l + "%,1)";
+  var background_layer = {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": background_color,
+        "background-opacity": [
+          "interpolate", ["linear"], ["zoom"],
+          5,1,
+          6,1,
+          7,0.7,
+          8,0.5,
+          9,0.2,
+          16,0.2,
+          17,1
+        ]
+      },
+      "layout": {
+        "visibility": "visible"
+      }
+  };
+  return background_layer;
+}
+//背景のON/OFF
+var background_onoff = function( h = main_color_arr[0], s = 100, l = 98){
+    var styleLoadStatus = map.isStyleLoaded();
+    if(styleLoadStatus){
+        if (map.getLayer("background")){
+            var target_layer = map.getLayer("background");
+            if(target_layer.visibility === "visible"){ 
+                map.setLayoutProperty("background", "visibility", "none");
+            }else{
+                map.setLayoutProperty("background", "visibility", "visible");
+            }
+        }else{
+            var style = map.getStyle();
+            var background_layer = create_backgorund_layer(h, s, l);
+            style.layers.unshift(background_layer);
+            map.setStyle(style);
+        }
+    }else{
+        alert("地図の読み込み中です。再度お試しください。");
+    }
+}
+
+/*************************************************/
+/*色をスタイルに反映                             */
+/*************************************************/
+var style_original = [];
+map.on("load", function(){
+  style_original = map.getStyle();
+});
+
+var change_style_color = function(callback, use_origin_style = true, input = 0){
+  var styleLoadStatus = map.isStyleLoaded();
+  if(styleLoadStatus){
+    if(style_original && use_origin_style){
+      var style = JSON.parse(JSON.stringify(style_original));
+    }else{
+      var style = map.getStyle();
+    }
+    
+    var layers = style.layers;
+    var backgrond_flag = false;
+    
+    for(var i = 0;  i < layers.length;  i++ ) {
+      var layer = layers[i];
+      if(layer.paint){
+        var paintinfo = layer.paint;
+        for(name in paintinfo){
+          if(name.match(/-color/)) {
+            var col = parsecolor(paintinfo[name]);
+            if((col[0] == "rgba") || (col[0] == "rgb")){
+              var hsl = rgb2hsl(col[1], col[2], col[3], col[4]);
+            }else{
+              if(col[4]){
+                var hsl = [col[1], col[2], col[3], col[4]];
+              }else{
+                var hsl = [col[1], col[2], col[3], 1];
+              }
+            }
+            paintinfo[name] = callback("hsla", hsl[0], hsl[1], hsl[2], hsl[3], name);
+          }
+        }
+      }
+      
+      if(layer.type == "background"){
+        backgrond_flag = true;
+        layer.id = "background";
+      }
+      
+    }
+    
+    if(!backgrond_flag){
+      var background_layer = create_backgorund_layer();
+      style.layers.unshift(background_layer);
+    }
+    
+    if(!(style.metadata)){
+      style.metadata = {}
+    }
+    
+    style.metadata.colorset = {
+        "main": main_color_arr,
+        "sub": sub_color_arr,
+        "accent":accnt_color_arr
+    };
+    
+    
+    map.setStyle(style);
+    var stylejson = JSON.stringify(style, null, 4);
+    setdownload(stylejson);
+    
+  }else{
+    alert("地図の読み込み中です。再度お試しください。");
+  }
+}
+
+/*************************************************/
+/*ダウンロード                                   */
+/*************************************************/
+var setdownload = function(stylejson){
+    var blob = new Blob([stylejson], {type: "application\/json"});
+    var url = URL.createObjectURL(blob);
+    const a = document.getElementById("download");
+    a.href = window.URL.createObjectURL(blob);
+    a.download = "style-m" + Math.floor(main_color_arr[0]) + "-s" + Math.floor(sub_color_arr[0]) + "-a" + Math.floor(accnt_color_arr[0]) + ".json";
+}
+
+/*************************************************/
+/*ボタンごとの処理                               */
+/*************************************************/
+//通常
+var change_style_color_normal = function(){
+    change_style_color(change_color, true); //ベースのスタイルを利用
+}
+//ランダム
+var change_style_color_rand = function(){
+    change_style_color(randchange_color, false); //表示されているスタイルを利用
+}
+//モノクロ
+var change_style_color_monochrome = function(){
+    if (map.getLayer("background")){
+        //何もしない
+    }else{
+        background_onoff(main_color_arr[0], 0, 98);
+    }
+    change_style_color(change_monochrome, false); //表示されているスタイルを利用
+}
+
+</script>
+ 
+</body>
+</html>
