@@ -55,7 +55,7 @@ Style Specification に対応した地図表示ソフトウェア・ライブラ
 
 本ツールや、本ツールで作成したスタイル設定ファイルを利用して、地理院地図Vectorの地図データを表示するサイトを構築した場合には、構築したサイトに出典の記載をお願いします。
 
-出典の記載例：`<a href=”https://maps.gsi.go.jp/vector/” target=”blank”>地理院地図Vector（仮称）</a>`
+出典の記載例：`<a href="https://maps.gsi.go.jp/vector/" target="_blank">地理院地図Vector（仮称）</a>`
 
 また、Mapbox GL JSを利用した地理院地図Vectorの地図データの表示方法については、以下のレポジトリを参考にしていただけます。
 
